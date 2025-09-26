@@ -23,6 +23,12 @@
                 <div class="nav-tab">设备监测</div>
             </nav>
             <h1 class="main-title">物联网大数据平台</h1>
+            <!-- 主题切换按钮 -->
+            <div class="theme-switcher">
+                <button id="themeLight" class="theme-btn">浅色</button>
+                <button id="themeDark" class="theme-btn">深色</button>
+                <button id="themeBlue" class="theme-btn">蓝色</button>
+            </div>
         </header>
 
         <!-- 主要内容区域 -->
@@ -227,4 +233,57 @@
 
     <script src="scripts/main.js"></script>
 </body>
+<script>
+// 主题切换功能
+const themes = {
+    light: {
+        '--bg-color': '#f5f6fa',
+        '--header-bg': '#fff',
+        '--main-title': '#222',
+        '--panel-bg': '#fff',
+        '--text-color': '#222',
+        '--accent': '#1976d2',
+        '--card-bg': '#fff',
+        '--nav-active': '#1976d2',
+        '--nav-inactive': '#888',
+    },
+    dark: {
+        '--bg-color': '#181c27',
+        '--header-bg': '#23283b',
+        '--main-title': '#fff',
+        '--panel-bg': '#23283b',
+        '--text-color': '#e0e0e0',
+        '--accent': '#ff9800',
+        '--card-bg': '#23283b',
+        '--nav-active': '#ff9800',
+        '--nav-inactive': '#888',
+    },
+    blue: {
+        '--bg-color': '#e3f2fd',
+        '--header-bg': '#2196f3',
+        '--main-title': '#fff',
+        '--panel-bg': '#bbdefb',
+        '--text-color': '#222',
+        '--accent': '#1565c0',
+        '--card-bg': '#e3f2fd',
+        '--nav-active': '#1565c0',
+        '--nav-inactive': '#888',
+    }
+};
+
+function applyTheme(theme) {
+    const root = document.documentElement;
+    const themeVars = themes[theme];
+    Object.keys(themeVars).forEach(key => {
+        root.style.setProperty(key, themeVars[key]);
+    });
+}
+
+document.getElementById('themeLight').onclick = () => applyTheme('light');
+document.getElementById('themeDark').onclick = () => applyTheme('dark');
+document.getElementById('themeBlue').onclick = () => applyTheme('blue');
+
+// 默认浅色主题
+applyTheme('light');
+</script>
 </html>
