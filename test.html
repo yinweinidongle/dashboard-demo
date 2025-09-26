@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>地图测试</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #0a1929;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        
+        .map-container {
+            width: 100%;
+            height: 500px;
+            background: linear-gradient(135deg, rgba(15, 30, 45, 0.9), rgba(25, 45, 70, 0.8));
+            border: 1px solid rgba(64, 169, 243, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .china-map {
+            width: 100%;
+            height: 100%;
+            min-height: 400px;
+        }
+        
+        .loading {
+            color: #40a9f3;
+            font-size: 18px;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(15, 30, 45, 0.9);
+            border-radius: 8px;
+            border: 1px solid rgba(64, 169, 243, 0.3);
+        }
+        
+        .province-list {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 8px;
+        }
+        
+        .province-item {
+            padding: 8px 12px;
+            background: rgba(64, 169, 243, 0.1);
+            border: 1px solid rgba(64, 169, 243, 0.3);
+            border-radius: 4px;
+            font-size: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .province-item:hover {
+            background: rgba(64, 169, 243, 0.2);
+            border-color: rgba(64, 169, 243, 0.6);
+        }
+        
+        .province-item.selected {
+            background: rgba(255, 168, 80, 0.2);
+            border-color: rgba(255, 168, 80, 0.6);
+            color: #ffa850;
+        }
+    </style>
+</head>
+<body>
+    <h1>地图显示测试</h1>
+    
+    <div class="map-container">
+        <div id="chinaMap" class="china-map">
+            <div class="loading">正在加载地图...</div>
+        </div>
+    </div>
+    
+    <div class="status">
+        <h3>状态信息</h3>
+        <div id="statusInfo">正在检查...</div>
+    </div>
+    
+    <div class="province-list" id="provinceList">
+        <!-- 省份按钮将由JavaScript动态生成 -->
+    </div>
+
+    <!-- 本地地图数据 -->
+    <script src="scripts/china-map.js"></script>
+    
+    <script>
+        let chart = null;
+        let selectedProvince = null;
+        
+        // 省份数据
+        const provinces = ['北京', '上海', '天津', '重庆', '河北', '山西', '内蒙古', '辽宁', '吉林', '黑龙江', '江苏', '浙江', '安徽', '福建', '江西', '山东', '河南', '湖北', '湖南', '广东', '广西', '海南', '四川', '贵州', '云南', '西藏', '陕西', '甘肃', '青海', '宁夏', '新疆'];
+        
+        function updateStatus(message) {
+            document.getElementById('statusInfo').innerHTML = message;
+        }
+        
+        function createProvinceButtons() {
+            const container = document.getElementById('provinceList');
+            provinces.forEach(province => {
+                const button = document.createElement('div');
+                button.className = 'province-item';
+                button.textContent = province;
+                button.onclick = () => selectProvince(province);
+                container.appendChild(button);
+            });
+        }
+        
+        function selectProvince(provinceName) {
+            selectedProvince = provinceName;
+            
+            // 更新按钮状态
+            document.querySelectorAll('.province-item').forEach(item => {
+                item.classList.toggle('selected', item.textContent === provinceName);
+            });
+            
+            updateStatus(`选中省份: ${provinceName}`);
+            
+            // 如果有地图，更新地图
+            if (chart) {
+                initMap();
+            }
+        }
+        
+        function initMap() {
+            try {
+                const mapContainer = document.getElementById('chinaMap');
+                
+                // 检查ECharts是否可用
+                if (typeof echarts === 'undefined') {
+                    updateStatus('❌ ECharts库未加载，使用CDN加载...');
+                    loadEChartsFromCDN();
+                    return;
+                }
+                
+                updateStatus('✅ ECharts已加载，初始化地图...');
+                
+                if (!chart) {
+                    chart = echarts.init(mapContainer);
+                }
+                
+                const option = {
+                    backgroundColor: 'transparent',
+                    geo: {
+                        map: 'china',
+                        roam: true,
+                        zoom: 1.0,
+                        center: [104.0, 37.5],
+                        itemStyle: {
+                            areaColor: function(params) {
+                                if (selectedProvince === params.name) {
+                                    return '#ffa850';
+                                }
+                                return '#40a9f3';
+                            },
+                            borderColor: '#ffffff',
+                            borderWidth: 1
+                        },
+                        emphasis: {
+                            itemStyle: {
+                                areaColor: '#ffa850'
+                            },
+                            label: {
+                                show: true,
+                                color: '#ffffff',
+                                fontSize: 14,
+                                fontWeight: 'bold'
+                            }
+                        }
+                    },
+                    tooltip: {
+                        trigger: 'item',
+                        backgroundColor: 'rgba(15, 30, 45, 0.9)',
+                        borderColor: '#40a9f3',
+                        textStyle: {
+                            color: '#ffffff'
+                        },
+                        formatter: function(params) {
+                            return `${params.name}<br/>点击可选中该省份`;
+                        }
+                    }
+                };
+                
+                chart.setOption(option);
+                
+                // 绑定点击事件
+                chart.off('click');
+                chart.on('click', function(params) {
+                    if (params.componentType === 'geo') {
+                        selectProvince(params.name);
+                    }
+                });
+                
+                updateStatus('✅ 地图初始化成功！可以点击地图或下方按钮选择省份');
+                
+            } catch (error) {
+                updateStatus(`❌ 地图初始化失败: ${error.message}`);
+                console.error('地图初始化错误:', error);
+            }
+        }
+        
+        function loadEChartsFromCDN() {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js';
+            script.onload = function() {
+                updateStatus('✅ ECharts从CDN加载成功，重新初始化地图...');
+                setTimeout(initMap, 500);
+            };
+            script.onerror = function() {
+                updateStatus('❌ ECharts CDN加载失败，请检查网络连接');
+                document.getElementById('chinaMap').innerHTML = `
+                    <div style="text-align: center; color: #ff6b6b;">
+                        <div>无法加载图表库</div>
+                        <div style="font-size: 12px; margin-top: 8px;">请检查网络连接或使用离线版本</div>
+                    </div>
+                `;
+            };
+            document.head.appendChild(script);
+        }
+        
+        // 页面加载完成后初始化
+        window.addEventListener('load', function() {
+            updateStatus('页面加载完成，检查依赖...');
+            createProvinceButtons();
+            
+            setTimeout(() => {
+                if (typeof chinaMapData !== 'undefined') {
+                    updateStatus('✅ 本地地图数据已加载');
+                    if (typeof echarts !== 'undefined' && echarts.registerMap) {
+                        echarts.registerMap('china', chinaMapData);
+                        updateStatus('✅ 地图数据注册成功');
+                    }
+                } else {
+                    updateStatus('❌ 本地地图数据未加载');
+                }
+                
+                initMap();
+            }, 100);
+        });
+        
+        // 响应式调整
+        window.addEventListener('resize', function() {
+            if (chart) {
+                chart.resize();
+            }
+        });
+    </script>
+</body>
+</html>

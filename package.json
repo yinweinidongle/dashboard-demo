@@ -1,0 +1,16 @@
+{
+  "name": "iot-dashboard",
+  "version": "1.0.0",
+  "description": "物联网大数据平台数据可视化大屏",
+  "main": "index.html",
+  "scripts": {
+    "dev": "live-server --port=3000",
+    "build": "echo 'Build complete'"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.1"
+  },
+  "keywords": ["dashboard", "iot", "visualization", "大屏"],
+  "author": "Developer",
+  "license": "MIT"
+}

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>物联网大数据平台</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <!-- ECharts 图表库 -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <!-- ECharts GL 3D扩展库 -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts-gl@2.0.9/dist/echarts-gl.min.js"></script>
+    <!-- 本地中国地图数据 -->
+    <script src="scripts/china-map.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- 顶部导航栏 -->
+        <header class="dashboard-header">
+            <nav class="nav-tabs">
+                <div class="nav-tab active">全景总览</div>
+                <div class="nav-tab">巡检统计</div>
+                <div class="nav-tab">客户分析</div>
+                <div class="nav-tab">设备监测</div>
+            </nav>
+            <h1 class="main-title">物联网大数据平台</h1>
+        </header>
+
+        <!-- 主要内容区域 -->
+        <main class="dashboard-main">
+            <!-- 左侧面板 -->
+            <aside class="left-panel">
+                <!-- 巡检设备分类 -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>巡检设备分类</h3>
+                        <div class="chart-legend">
+                            <span class="legend-item"><span class="legend-color blue"></span>已运行</span>
+                            <span class="legend-item"><span class="legend-color orange"></span>待运行</span>
+                        </div>
+                    </div>
+                    <div id="deviceClassChart" class="chart-content"></div>
+                </div>
+
+                <!-- 巡检趋势 -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>巡检趋势</h3>
+                        <div class="chart-legend">
+                            <span class="legend-item"><span class="legend-color blue"></span>总巡检量</span>
+                            <span class="legend-item"><span class="legend-color red"></span>巡检均值</span>
+                            <span class="legend-item"><span class="legend-color yellow"></span>未完成</span>
+                        </div>
+                    </div>
+                    <div id="trendChart" class="chart-content"></div>
+                </div>
+
+                <!-- 厂家故障率 -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>厂家故障率</h3>
+                        <div class="chart-legend">
+                            <span class="legend-item"><span class="legend-color blue"></span>厂家一</span>
+                            <span class="legend-item"><span class="legend-color yellow"></span>厂家二</span>
+                        </div>
+                    </div>
+                    <div id="failureRateChart" class="chart-content"></div>
+                </div>
+            </aside>
+
+            <!-- 中央区域 -->
+            <section class="center-panel">
+                <!-- 统计卡片 -->
+                <div class="stats-cards">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <div class="icon-stack"></div>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value">397</div>
+                            <div class="stat-label">设备总数</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <div class="icon-network"></div>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value">254</div>
+                            <div class="stat-label">已巡检</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <div class="icon-shield"></div>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value">145</div>
+                            <div class="stat-label">待巡检</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 地图区域 -->
+                <div class="map-container">
+                    <!-- 地图控制按钮 -->
+                    <div class="map-controls">
+                        <div class="map-control-btn" id="toggleMapView" title="切换地图模式">🌍</div>
+                        <div class="map-control-btn" id="resetMapView" title="重置视角">🔄</div>
+                    </div>
+                    
+                    <div id="chinaMap" class="china-map"></div>
+                    
+                    <!-- 选中省份信息 -->
+                    <div class="province-info" id="provinceInfo">
+                        <h4 id="provinceName">选中省份</h4>
+                        <div class="province-stats">
+                            <div class="province-stat">
+                                <span class="province-stat-label">设备数量</span>
+                                <span class="province-stat-value" id="provinceDevices">0</span>
+                            </div>
+                            <div class="province-stat">
+                                <span class="province-stat-label">在线状态</span>
+                                <span class="province-stat-value" id="provinceOnline">0</span>
+                            </div>
+                            <div class="province-stat">
+                                <span class="province-stat-label">巡检次数</span>
+                                <span class="province-stat-value" id="provinceInspections">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 右侧面板 -->
+            <aside class="right-panel">
+                <!-- 巡检完成情况 -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>巡检完成情况</h3>
+                    </div>
+                    <div class="completion-stats">
+                        <div id="completionChart" class="completion-chart"></div>
+                        <div class="completion-details">
+                            <div class="completion-item">
+                                <span class="completion-label">按时完成</span>
+                                <span class="completion-value">199台 78.6%</span>
+                            </div>
+                            <div class="completion-item">
+                                <span class="completion-label">未完成</span>
+                                <span class="completion-value">54台 16.3%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 巡检记录 -->
+                <div class="chart-container records-container">
+                    <div class="chart-header">
+                        <h3>巡检记录</h3>
+                    </div>
+                    <div class="records-list">
+                        <div class="record-item">
+                            <div class="record-status active"></div>
+                            <div class="record-content">
+                                <div class="record-title">【全球定位】超级导管雨量站60.0ML到现场98.9%生成率</div>
+                                <div class="record-info">
+                                    <span>覆盖人：刘达</span>
+                                    <span>故障时间：2022-02-24</span>
+                                </div>
+                                <div class="record-location">完成地点：盛时完成</div>
+                                <div class="record-time">送货日期：2022-02-27</div>
+                            </div>
+                        </div>
+                        <div class="record-item">
+                            <div class="record-status active"></div>
+                            <div class="record-content">
+                                <div class="record-title">鹏卯V-1257移机自省式五大台</div>
+                                <div class="record-info">
+                                    <span>覆盖人：刘达</span>
+                                    <span>故障时间：2022-02-24</span>
+                                </div>
+                                <div class="record-location">完成地点：盛时完成</div>
+                                <div class="record-time">送货日期：2022-02-27</div>
+                            </div>
+                        </div>
+                        <div class="record-item">
+                            <div class="record-status active"></div>
+                            <div class="record-content">
+                                <div class="record-title">智能DG-0112组件</div>
+                                <div class="record-info">
+                                    <span>覆盖人：刘达</span>
+                                    <span>故障时间：2022-02-24</span>
+                                </div>
+                                <div class="record-location">完成地点：盛时完成</div>
+                                <div class="record-time">送货日期：2022-02-27</div>
+                            </div>
+                        </div>
+                        <div class="record-item">
+                            <div class="record-status active"></div>
+                            <div class="record-content">
+                                <div class="record-title">【1能进程】超级导管终端设备入库30.0ML作阶段73.9%生成率</div>
+                                <div class="record-info">
+                                    <span>覆盖人：刘达</span>
+                                    <span>故障时间：2022-02-24</span>
+                                </div>
+                                <div class="record-location">完成地点：盛时完成</div>
+                                <div class="record-time">送货日期：2022-02-27</div>
+                            </div>
+                        </div>
+                        <div class="record-item">
+                            <div class="record-status active"></div>
+                            <div class="record-content">
+                                <div class="record-title">【工厂传送】传递流散数智号大</div>
+                                <div class="record-info">
+                                    <span>覆盖人：刘达</span>
+                                    <span>故障时间：2022-02-24</span>
+                                </div>
+                                <div class="record-location">完成地点：盛时完成</div>
+                                <div class="record-time">送货日期：2022-02-27</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <script src="scripts/main.js"></script>
+</body>
+</html>
